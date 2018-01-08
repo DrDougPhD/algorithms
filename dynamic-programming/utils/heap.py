@@ -10,10 +10,11 @@
 import binarytree
 
 class BinaryHeap(object):
-    def __init__(self, values=None):
+    def __init__(self, values=None, max=True):
         """Create an empty heap
         """
         self.tree = binarytree.CompleteBinaryTree()
+        self._is_max_heap = max
         if values is not None:
             for v in values:
                 self.insert(value=v)
@@ -53,7 +54,7 @@ class BinaryHeap(object):
 
     def _upheap(self, node):
         # node.parent is never null
-        if node.value <= node.parent.value:
+        if self.heap_compare(node, node.parent):
             # If they are in the correct order, stop.
             return node
 
@@ -83,15 +84,18 @@ class BinaryHeap(object):
             return
 
         # If they are in the correct order, stop.
-        if all(map(lambda x: x.value <= node.value, children)):
+        if all(map(lambda x: self.heap_compare(x, node), children)):
             return
 
         # If not, swap the element with one of its children and return to the
         #  previous step. (Swap with its smaller child in a min-heap and its
         #  larger child in a max-heap.)
-        largest_child = max(children, key=lambda x: x.value)
-        node.value, largest_child.value = largest_child.value, node.value
-        self._downheap(node=largest_child)
+        if self._is_max_heap:
+            child_to_swap = max(children, key=lambda x: x.value)
+        else:
+            child_to_swap = min(children, key=lambda x: x.value)
+        node.value, child_to_swap.value = child_to_swap.value, node.value
+        self._downheap(node=child_to_swap)
 
     def __bool__(self):
         return bool(self.tree.root)
@@ -99,48 +103,15 @@ class BinaryHeap(object):
     def __str__(self):
         return str(self.tree)
 
-    def assert_valid(self):
-        if self.tree.root is None:
-            return True
-
-        if self.tree.root.left is None and self.tree.root.right is None:
-            return True
-
-        if self.tree.root.left is not None:
-            valid_subtree = self._assert_on_subtree_rooted_at(
-                node=self.tree.root.left
-            )
-            if not valid_subtree:
-                return False
-
-        if self.tree.root.right is not None:
-            valid_subtree = self._assert_on_subtree_rooted_at(
-                node=self.tree.root.right)
-            if not valid_subtree:
-                return False
-
-        return True
-
-    def _assert_on_subtree_rooted_at(self, node):
-        assert node.parent is not None
-        if node.parent.value < node.value:
-            return False
-
-        if node.left is not None:
-            valid_subtree = self._assert_on_subtree_rooted_at(node=node.left)
-            if not valid_subtree:
-                return False
-
-        if node.right is not None:
-            valid_subtree = self._assert_on_subtree_rooted_at(node=node.right)
-            if not valid_subtree:
-                return False
-
-        return True
+    def heap_compare(self, u, v):
+        if self._is_max_heap:
+            return u.value <= v.value
+        else:
+            return u.value >= v.value
 
 
-def sort(values):
-    heap = BinaryHeap(values=values)
+def sort(values, reverse=False):
+    heap = BinaryHeap(values=values, max=reverse)
     while heap:
         yield heap.extract()
 
@@ -150,9 +121,20 @@ if __name__ == '__main__':
     import time
     random.seed(time.time())
 
+    print('Test maxheap:')
     values = [random.randrange(0, 1000) for _ in range(122)]
-    sorted_array = list(sort(values))
+    sorted_array = list(sort(values, reverse=True))
     print('Sorted: {}'.format(sorted_array))
 
     for x, y in zip(sorted(values, reverse=True), sorted_array):
+        assert x == y, 'Heap is not properly sorting!'
+
+    print('')
+
+    print('Test minheap:')
+    values = [random.randrange(0, 1000) for _ in range(122)]
+    sorted_array = list(sort(values, reverse=False))
+    print('Sorted: {}'.format(sorted_array))
+
+    for x, y in zip(sorted(values, reverse=False), sorted_array):
         assert x == y, 'Heap is not properly sorting!'
