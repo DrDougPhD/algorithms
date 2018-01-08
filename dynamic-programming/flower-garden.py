@@ -34,15 +34,25 @@
 # -	Each element of wilt will be between 1 and 365, inclusive.
 # -	For each element i of bloom and wilt, wilt[i] will be greater than bloom[i].
 
+from utils import heap
+
 
 def solve(height, bloom, wilt):
     print('-' * 120)
 
-    ordered_by_height = [
-        (h, i)
-        for i, h in enumerate(height)
-    ]
-    ordered_by_height.sort(key=lambda x: x[0], reverse=True)
+    ordered_by_height = list(heap.sort(
+        values=[
+            (h, i)
+            for i, h in enumerate(height)
+        ],
+        reverse=True,
+        key=lambda x: x[0],
+    ))
+    # ordered_by_height = [
+    #     (h, i)
+    #     for i, h in enumerate(height)
+    # ]
+    # ordered_by_height.sort(key=lambda x: x[0], reverse=True)
 
     ordering = [ordered_by_height[0][0]]
 

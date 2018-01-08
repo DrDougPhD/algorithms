@@ -7,14 +7,19 @@
 #     equal to (>=) or less than or equal to (<=) the keys in the node's
 #     children, according to some total order.
 
-import binarytree
+from utils import binarytree
 
 class BinaryHeap(object):
-    def __init__(self, values=None, max=True):
+    def __init__(self, values=None, max=True, key=None):
         """Create an empty heap
         """
         self.tree = binarytree.CompleteBinaryTree()
         self._is_max_heap = max
+        if key is not None:
+            self._value_comparer = key
+        else:
+            self._value_comparer = lambda x: x
+
         if values is not None:
             for v in values:
                 self.insert(value=v)
@@ -105,13 +110,15 @@ class BinaryHeap(object):
 
     def heap_compare(self, u, v):
         if self._is_max_heap:
-            return u.value <= v.value
+            return self._value_comparer(u.value) <=\
+                   self._value_comparer(v.value)
         else:
-            return u.value >= v.value
+            return self._value_comparer(u.value) >= \
+                   self._value_comparer(v.value)
 
 
-def sort(values, reverse=False):
-    heap = BinaryHeap(values=values, max=reverse)
+def sort(values, reverse=False, key=None):
+    heap = BinaryHeap(values=values, max=reverse, key=key)
     while heap:
         yield heap.extract()
 
